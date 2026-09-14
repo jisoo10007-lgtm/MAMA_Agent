@@ -1,0 +1,15 @@
+# Python virtual environment
+.venv/
+
+# Azure secrets
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+
+# Generated outputs
+output/
