@@ -1,20 +1,39 @@
 import os
-from dotenv import load_dotenv
+import json
 
+from dotenv import load_dotenv
 from azure.core.credentials import AzureKeyCredential
-from azure.ai.documentintelligence import DocumentIntelligenceClient
+from azure.ai.documentintelligence import (
+    DocumentIntelligenceClient
+)
+
+from healthcheck_table_parser import (
+    table_to_rows,
+    parse_healthcheck_rows
+)
+
+from field_mapper import map_fields
 
 
 load_dotenv()
 
-endpoint = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT")
-key = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_KEY")
+endpoint = os.getenv(
+    "AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT"
+)
+
+key = os.getenv(
+    "AZURE_DOCUMENT_INTELLIGENCE_KEY"
+)
 
 if not endpoint:
-    raise ValueError("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT가 없습니다.")
+    raise ValueError(
+        "Azure Document Intelligence endpoint가 없습니다."
+    )
 
 if not key:
-    raise ValueError("AZURE_DOCUMENT_INTELLIGENCE_KEY가 없습니다.")
+    raise ValueError(
+        "Azure Document Intelligence key가 없습니다."
+    )
 
 
 client = DocumentIntelligenceClient(
@@ -23,45 +42,112 @@ client = DocumentIntelligenceClient(
 )
 
 
-def analyze_layout(file_path: str):
+def analyze_layout(file_path):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(
+            f"파일을 찾을 수 없습니다: {file_path}"
+        )
+
     with open(file_path, "rb") as f:
+
         poller = client.begin_analyze_document(
             model_id="prebuilt-layout",
             body=f
         )
 
-    result = poller.result()
-    return result
+    return poller.result()
+
+
+def extract_healthcheck(result):
+
+    all_records = []
+
+    for table in result.tables:
+
+        rows = table_to_rows(table)
+
+        records = parse_healthcheck_rows(
+            rows
+        )
+
+        all_records.extend(records)
+
+    return all_records
+
+
+def save_json(data, file_path):
+
+    os.makedirs(
+        os.path.dirname(file_path),
+        exist_ok=True
+    )
+
+    with open(
+        file_path,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        json.dump(
+            data,
+            f,
+            ensure_ascii=False,
+            indent=2
+        )
 
 
 if __name__ == "__main__":
-    file_path = "data/case01_standard_healthcheck.pdf"
 
-    result = analyze_layout(file_path)
+    input_file = (
+        "data/case01_standard_healthcheck.pdf"
+    )
 
-    print("분석 완료")
-    print("페이지 수:", len(result.pages))
-    print("테이블 수:", len(result.tables))
+    output_file = (
+        "output/healthcheck.json"
+    )
 
-print("\n=== OCR TEXT ===")
+    print("Azure 분석 시작")
 
-for page_index, page in enumerate(result.pages, start=1):
-    print(f"\n[PAGE {page_index}]")
+    result = analyze_layout(
+        input_file
+    )
 
-    if page.lines:
-        for line in page.lines:
-            print(line.content)
+    print("Azure 분석 완료")
 
-print("\n=== TABLES ===")
+    records = extract_healthcheck(
+        result
+    )
 
-for table_index, table in enumerate(result.tables, start=1):
-    print(f"\n[TABLE {table_index}]")
-    print("rows:", table.row_count)
-    print("columns:", table.column_count)
+    mapped, unmapped = map_fields(
+        records
+    )
 
-    for cell in table.cells:
+    output = {
+        "healthcheck": mapped,
+        "unmapped_fields": unmapped
+    }
+
+    save_json(
+        output,
+        output_file
+    )
+
+    print("\n추출 결과")
+
+    for key, item in mapped.items():
         print(
-            f"row={cell.row_index}, "
-            f"col={cell.column_index}, "
-            f"text={cell.content}"
+            key,
+            "=",
+            item["value"],
+            item["unit"]
         )
+
+    print(
+        "\n매핑되지 않은 항목:",
+        len(unmapped)
+    )
+
+    print(
+        "\nJSON 저장 완료:",
+        output_file
+    )
