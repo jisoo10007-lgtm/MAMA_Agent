@@ -1,69 +1,63 @@
 def table_to_rows(table):
+    """
+    Azure Table 객체를
+    2차원 리스트로 변환한다.
+    """
+
     rows = [
         [""] * table.column_count
         for _ in range(table.row_count)
     ]
 
     for cell in table.cells:
-        rows[cell.row_index][cell.column_index] = cell.content.strip()
+
+        rows[
+            cell.row_index
+        ][
+            cell.column_index
+        ] = cell.content.strip()
 
     return rows
 
 
 def parse_healthcheck_rows(rows):
     """
-    3열 구조:
-    검사항목 | 결과 | 단위
+    MAMA 여성건강센터 건강검진 결과표 파싱.
 
-    6열 구조:
-    검사항목 | 결과 | 단위 | 검사항목 | 결과 | 단위
-
-    둘 다 처리한다.
+    예상 구조:
+    구분 | 검사항목 | 결과 | 단위 | 참고치
     """
 
-    extracted = []
+    records = []
 
     for row in rows:
-        if len(row) < 3:
+
+        if len(row) < 4:
             continue
 
-        # 왼쪽 3열
-        left = row[:3]
-        item = make_record(left)
+        category = row[0].strip()
+        name = row[1].strip()
+        value = row[2].strip()
+        unit = row[3].strip()
 
-        if item:
-            extracted.append(item)
+        # Header 제외
+        if name in [
+            "",
+            "검사항목",
+            "검사명",
+            "항목"
+        ]:
+            continue
 
-        # 오른쪽 3열
-        if len(row) >= 6:
-            right = row[3:6]
-            item = make_record(right)
+        # 값이 없는 행 제외
+        if not value:
+            continue
 
-            if item:
-                extracted.append(item)
+        records.append({
+            "category": category,
+            "name": name,
+            "value": value,
+            "unit": unit
+        })
 
-    return extracted
-
-
-def make_record(columns):
-    name = columns[0].strip()
-    value = columns[1].strip()
-    unit = columns[2].strip()
-
-    # 헤더 제거
-    if name in [
-        "",
-        "검사항목",
-        "항목",
-        "검사명"
-    ]:
-        return None
-
-    if not value:
-        return None
-
-    return {
-        "name": name,
-        "value": value,
-        "unit": unit
-    }
+    return records
