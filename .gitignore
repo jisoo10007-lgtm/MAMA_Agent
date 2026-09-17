@@ -1,15 +1,23 @@
+# 환경변수 / API Key
+.env
+
 # Python virtual environment
 .venv/
-
-# Azure secrets
-.env
+venv/
 
 # Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Generated output
+output/
 
 # IDE
 .vscode/
+.idea/
 
-# Generated outputs
-output/
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,462 @@
+{
+  "patient_01_healthcheck.pdf": {
+    "patient_id": "P000001",
+    "patient_info": {
+      "name": "김하늘",
+      "birth_date": "1998-12-03"
+    },
+    "exam_info": {
+      "exam_date": "2026-01-15",
+      "institution_name": "MAMA 여성건강센터"
+    },
+    "pregnancy": {
+      "raw": "비임신",
+      "is_pregnant": false,
+      "gestational_week": null
+    },
+    "healthcheck": {
+      "height_cm": 158.7,
+      "weight_kg": 54.1,
+      "waist_cm": 71.2,
+      "bmi_kg_m2": 21.48,
+      "vision_left": 1.0,
+      "vision_right": 1.2,
+      "hearing_left": "정상",
+      "hearing_right": "정상",
+      "systolic_bp_mmhg": 111,
+      "diastolic_bp_mmhg": 69,
+      "health_exam_hemoglobin_g_dl": 13.4,
+      "hs_crp_mg_l": 0.2,
+      "fasting_glucose_mg_dl": 87,
+      "hba1c_pct": 5.0,
+      "total_cholesterol_mg_dl": 171,
+      "hdl_cholesterol_mg_dl": 67,
+      "triglycerides_mg_dl": 72,
+      "ldl_cholesterol_mg_dl": 96,
+      "ast_u_l": 18,
+      "alt_u_l": 15,
+      "ggt_u_l": 12,
+      "urine_protein_dipstick": "음성",
+      "ferritin_ng_ml": 42.0,
+      "creatinine_mg_dl": 0.68,
+      "serum_folate_ng_ml": 12.4,
+      "pregnancy_status": "비임신",
+      "body_temperature_c": 36.5,
+      "current_hemoglobin_g_dl": 13.3
+    }
+  },
+  "patient_02_healthcheck.pdf": {
+    "patient_id": "P000002",
+    "patient_info": {
+      "name": "이서윤",
+      "birth_date": "1995-04-21"
+    },
+    "exam_info": {
+      "exam_date": "2026-02-03",
+      "institution_name": "MAMA 여성건강센터"
+    },
+    "pregnancy": {
+      "raw": "비임신",
+      "is_pregnant": false,
+      "gestational_week": null
+    },
+    "healthcheck": {
+      "height_cm": 163.2,
+      "weight_kg": 58.4,
+      "waist_cm": 73.8,
+      "bmi_kg_m2": 21.93,
+      "vision_left": 0.9,
+      "vision_right": 1.0,
+      "hearing_left": "정상",
+      "hearing_right": "정상",
+      "systolic_bp_mmhg": 118,
+      "diastolic_bp_mmhg": 72,
+      "health_exam_hemoglobin_g_dl": 10.8,
+      "hs_crp_mg_l": 0.5,
+      "fasting_glucose_mg_dl": 108,
+      "hba1c_pct": 5.4,
+      "total_cholesterol_mg_dl": 188,
+      "hdl_cholesterol_mg_dl": 59,
+      "triglycerides_mg_dl": 91,
+      "ldl_cholesterol_mg_dl": 108,
+      "ast_u_l": 22,
+      "alt_u_l": 20,
+      "ggt_u_l": 18,
+      "urine_protein_dipstick": "음성",
+      "ferritin_ng_ml": 9.8,
+      "creatinine_mg_dl": 0.72,
+      "serum_folate_ng_ml": 8.6,
+      "pregnancy_status": "비임신",
+      "body_temperature_c": 36.7,
+      "current_hemoglobin_g_dl": 10.6
+    }
+  },
+  "patient_03_healthcheck.pdf": {
+    "patient_id": "P000003",
+    "patient_info": {
+      "name": "박지민",
+      "birth_date": "1993-07-11"
+    },
+    "exam_info": {
+      "exam_date": "2026-03-12",
+      "institution_name": "MAMA 여성건강센터"
+    },
+    "pregnancy": {
+      "raw": "임신(12주차)",
+      "is_pregnant": true,
+      "gestational_week": 12
+    },
+    "healthcheck": {
+      "height_cm": 160.4,
+      "weight_kg": 65.8,
+      "waist_cm": 82.0,
+      "bmi_kg_m2": 25.58,
+      "vision_left": 0.8,
+      "vision_right": 0.8,
+      "hearing_left": "정상",
+      "hearing_right": "정상",
+      "systolic_bp_mmhg": 126,
+      "diastolic_bp_mmhg": 78,
+      "health_exam_hemoglobin_g_dl": 12.2,
+      "hs_crp_mg_l": 0.9,
+      "fasting_glucose_mg_dl": 96,
+      "hba1c_pct": 5.3,
+      "total_cholesterol_mg_dl": 204,
+      "hdl_cholesterol_mg_dl": 51,
+      "triglycerides_mg_dl": 142,
+      "ldl_cholesterol_mg_dl": 125,
+      "ast_u_l": 25,
+      "alt_u_l": 29,
+      "ggt_u_l": 31,
+      "urine_protein_dipstick": "미량",
+      "ferritin_ng_ml": 24.5,
+      "creatinine_mg_dl": 0.75,
+      "serum_folate_ng_ml": 7.2,
+      "pregnancy_status": "임신(12주차)",
+      "body_temperature_c": 36.6,
+      "current_hemoglobin_g_dl": 11.7
+    }
+  },
+  "patient_04_healthcheck.pdf": {
+    "patient_id": "P000004",
+    "patient_info": {
+      "name": "최유진",
+      "birth_date": "1991-09-28"
+    },
+    "exam_info": {
+      "exam_date": "2026-04-07",
+      "institution_name": "MAMA 여성건강센터"
+    },
+    "pregnancy": {
+      "raw": "임신(26주차)",
+      "is_pregnant": true,
+      "gestational_week": 26
+    },
+    "healthcheck": {
+      "height_cm": 166.1,
+      "weight_kg": 70.2,
+      "waist_cm": 86.5,
+      "bmi_kg_m2": 25.44,
+      "vision_left": 1.0,
+      "vision_right": 0.9,
+      "hearing_left": "정상",
+      "hearing_right": "정상",
+      "systolic_bp_mmhg": 132,
+      "diastolic_bp_mmhg": 82,
+      "health_exam_hemoglobin_g_dl": 11.3,
+      "hs_crp_mg_l": 1.4,
+      "fasting_glucose_mg_dl": 89,
+      "hba1c_pct": 5.1,
+      "total_cholesterol_mg_dl": 195,
+      "hdl_cholesterol_mg_dl": 63,
+      "triglycerides_mg_dl": 110,
+      "ldl_cholesterol_mg_dl": 112,
+      "ast_u_l": 21,
+      "alt_u_l": 19,
+      "ggt_u_l": 17,
+      "urine_protein_dipstick": "음성",
+      "ferritin_ng_ml": 18.2,
+      "creatinine_mg_dl": 0.66,
+      "serum_folate_ng_ml": 10.1,
+      "pregnancy_status": "임신(26주차)",
+      "body_temperature_c": 36.8,
+      "current_hemoglobin_g_dl": 10.8
+    }
+  },
+  "patient_05_healthcheck.pdf": {
+    "patient_id": "P000005",
+    "patient_info": {
+      "name": "정수아",
+      "birth_date": "1997-02-14"
+    },
+    "exam_info": {
+      "exam_date": "2026-05-19",
+      "institution_name": "MAMA 여성건강센터"
+    },
+    "pregnancy": {
+      "raw": "임신(32주차)",
+      "is_pregnant": true,
+      "gestational_week": 32
+    },
+    "healthcheck": {
+      "height_cm": 155.8,
+      "weight_kg": 62.7,
+      "waist_cm": 80.4,
+      "bmi_kg_m2": 25.83,
+      "vision_left": 1.2,
+      "vision_right": 1.0,
+      "hearing_left": "정상",
+      "hearing_right": "정상",
+      "systolic_bp_mmhg": 109,
+      "diastolic_bp_mmhg": 67,
+      "health_exam_hemoglobin_g_dl": 10.9,
+      "hs_crp_mg_l": 0.7,
+      "fasting_glucose_mg_dl": 92,
+      "hba1c_pct": 5.2,
+      "total_cholesterol_mg_dl": 183,
+      "hdl_cholesterol_mg_dl": 70,
+      "triglycerides_mg_dl": 88,
+      "ldl_cholesterol_mg_dl": 95,
+      "ast_u_l": 17,
+      "alt_u_l": 14,
+      "ggt_u_l": 10,
+      "urine_protein_dipstick": "음성",
+      "ferritin_ng_ml": 14.0,
+      "creatinine_mg_dl": 0.61,
+      "serum_folate_ng_ml": 13.5,
+      "pregnancy_status": "임신(32주차)",
+      "body_temperature_c": 36.7,
+      "current_hemoglobin_g_dl": 10.5
+    }
+  },
+  "patient_06_healthcheck.pdf": {
+    "patient_id": "P000006",
+    "patient_info": {
+      "name": "한예린",
+      "birth_date": "1990-06-30"
+    },
+    "exam_info": {
+      "exam_date": "2026-06-05",
+      "institution_name": "MAMA 여성건강센터"
+    },
+    "pregnancy": {
+      "raw": "임신(28주차)",
+      "is_pregnant": true,
+      "gestational_week": 28
+    },
+    "healthcheck": {
+      "height_cm": 168.0,
+      "weight_kg": 78.3,
+      "waist_cm": 91.6,
+      "bmi_kg_m2": 27.74,
+      "vision_left": 0.7,
+      "vision_right": 0.8,
+      "hearing_left": "정상",
+      "hearing_right": "이상",
+      "systolic_bp_mmhg": 139,
+      "diastolic_bp_mmhg": 88,
+      "health_exam_hemoglobin_g_dl": 12.0,
+      "hs_crp_mg_l": 2.1,
+      "fasting_glucose_mg_dl": 112,
+      "hba1c_pct": 5.8,
+      "total_cholesterol_mg_dl": 218,
+      "hdl_cholesterol_mg_dl": 47,
+      "triglycerides_mg_dl": 181,
+      "ldl_cholesterol_mg_dl": 135,
+      "ast_u_l": 31,
+      "alt_u_l": 38,
+      "ggt_u_l": 45,
+      "urine_protein_dipstick": "1+",
+      "ferritin_ng_ml": 31.0,
+      "creatinine_mg_dl": 0.82,
+      "serum_folate_ng_ml": 6.9,
+      "pregnancy_status": "임신(28주차)",
+      "body_temperature_c": 37.0,
+      "current_hemoglobin_g_dl": 11.1
+    }
+  },
+  "patient_07_healthcheck.pdf": {
+    "patient_id": "P000007",
+    "patient_info": {
+      "name": "윤채원",
+      "birth_date": "1996-11-05"
+    },
+    "exam_info": {
+      "exam_date": "2026-07-09",
+      "institution_name": "MAMA 여성건강센터"
+    },
+    "pregnancy": {
+      "raw": "비임신",
+      "is_pregnant": false,
+      "gestational_week": null
+    },
+    "healthcheck": {
+      "height_cm": 161.3,
+      "weight_kg": 60.0,
+      "waist_cm": 76.1,
+      "bmi_kg_m2": 23.06,
+      "vision_left": 1.0,
+      "vision_right": 1.0,
+      "hearing_left": "정상",
+      "hearing_right": "정상",
+      "systolic_bp_mmhg": 116,
+      "diastolic_bp_mmhg": 74,
+      "health_exam_hemoglobin_g_dl": 11.6,
+      "hs_crp_mg_l": 3.2,
+      "fasting_glucose_mg_dl": 91,
+      "hba1c_pct": 5.2,
+      "total_cholesterol_mg_dl": 176,
+      "hdl_cholesterol_mg_dl": 64,
+      "triglycerides_mg_dl": 85,
+      "ldl_cholesterol_mg_dl": 94,
+      "ast_u_l": 20,
+      "alt_u_l": 16,
+      "ggt_u_l": 13,
+      "urine_protein_dipstick": "음성",
+      "ferritin_ng_ml": 22.0,
+      "creatinine_mg_dl": 0.7,
+      "serum_folate_ng_ml": 11.8,
+      "pregnancy_status": "비임신",
+      "body_temperature_c": 36.9,
+      "current_hemoglobin_g_dl": 10.8
+    }
+  },
+  "patient_08_healthcheck.pdf": {
+    "patient_id": "P000008",
+    "patient_info": {
+      "name": "강민서",
+      "birth_date": "1992-01-19"
+    },
+    "exam_info": {
+      "exam_date": "2026-07-28",
+      "institution_name": "MAMA 여성건강센터"
+    },
+    "pregnancy": {
+      "raw": "비임신",
+      "is_pregnant": false,
+      "gestational_week": null
+    },
+    "healthcheck": {
+      "height_cm": 157.5,
+      "weight_kg": 57.9,
+      "waist_cm": 74.0,
+      "bmi_kg_m2": 23.34,
+      "vision_left": 0.9,
+      "vision_right": 1.1,
+      "hearing_left": "정상",
+      "hearing_right": "정상",
+      "systolic_bp_mmhg": 114,
+      "diastolic_bp_mmhg": 70,
+      "health_exam_hemoglobin_g_dl": 10.2,
+      "hs_crp_mg_l": 1.8,
+      "fasting_glucose_mg_dl": 85,
+      "hba1c_pct": 5.0,
+      "total_cholesterol_mg_dl": 169,
+      "hdl_cholesterol_mg_dl": 62,
+      "triglycerides_mg_dl": 76,
+      "ldl_cholesterol_mg_dl": 92,
+      "ast_u_l": 19,
+      "alt_u_l": 18,
+      "ggt_u_l": 14,
+      "urine_protein_dipstick": "음성",
+      "ferritin_ng_ml": 7.5,
+      "creatinine_mg_dl": 0.69,
+      "serum_folate_ng_ml": 9.4,
+      "pregnancy_status": "비임신",
+      "body_temperature_c": 36.6,
+      "current_hemoglobin_g_dl": 9.8
+    }
+  },
+  "patient_09_healthcheck.pdf": {
+    "patient_id": "P000009",
+    "patient_info": {
+      "name": "오지아",
+      "birth_date": "1989-10-02"
+    },
+    "exam_info": {
+      "exam_date": "2026-08-18",
+      "institution_name": "MAMA 여성건강센터"
+    },
+    "pregnancy": {
+      "raw": "비임신",
+      "is_pregnant": false,
+      "gestational_week": null
+    },
+    "healthcheck": {
+      "height_cm": 164.8,
+      "weight_kg": 72.5,
+      "waist_cm": 89.3,
+      "bmi_kg_m2": 26.69,
+      "vision_left": 0.6,
+      "vision_right": 0.7,
+      "hearing_left": "이상",
+      "hearing_right": "정상",
+      "systolic_bp_mmhg": 145,
+      "diastolic_bp_mmhg": 92,
+      "health_exam_hemoglobin_g_dl": 12.8,
+      "hs_crp_mg_l": 4.6,
+      "fasting_glucose_mg_dl": 128,
+      "hba1c_pct": 6.2,
+      "total_cholesterol_mg_dl": 232,
+      "hdl_cholesterol_mg_dl": 43,
+      "triglycerides_mg_dl": 210,
+      "ldl_cholesterol_mg_dl": 151,
+      "ast_u_l": 34,
+      "alt_u_l": 47,
+      "ggt_u_l": 58,
+      "urine_protein_dipstick": "2+",
+      "ferritin_ng_ml": 55.0,
+      "creatinine_mg_dl": 0.93,
+      "serum_folate_ng_ml": 5.8,
+      "pregnancy_status": "비임신",
+      "body_temperature_c": 37.1,
+      "current_hemoglobin_g_dl": 12.5
+    }
+  },
+  "patient_10_healthcheck.pdf": {
+    "patient_id": "P000010",
+    "patient_info": {
+      "name": "임다은",
+      "birth_date": "2000-05-17"
+    },
+    "exam_info": {
+      "exam_date": "2026-09-02",
+      "institution_name": "MAMA 여성건강센터"
+    },
+    "pregnancy": {
+      "raw": "비임신",
+      "is_pregnant": false,
+      "gestational_week": null
+    },
+    "healthcheck": {
+      "height_cm": 170.2,
+      "weight_kg": 52.6,
+      "waist_cm": 67.5,
+      "bmi_kg_m2": 18.16,
+      "vision_left": 1.2,
+      "vision_right": 1.2,
+      "hearing_left": "정상",
+      "hearing_right": "정상",
+      "systolic_bp_mmhg": 102,
+      "diastolic_bp_mmhg": 64,
+      "health_exam_hemoglobin_g_dl": 11.4,
+      "hs_crp_mg_l": 0.1,
+      "fasting_glucose_mg_dl": 79,
+      "hba1c_pct": 4.8,
+      "total_cholesterol_mg_dl": 154,
+      "hdl_cholesterol_mg_dl": 72,
+      "triglycerides_mg_dl": 54,
+      "ldl_cholesterol_mg_dl": 71,
+      "ast_u_l": 16,
+      "alt_u_l": 12,
+      "ggt_u_l": 9,
+      "urine_protein_dipstick": "음성",
+      "ferritin_ng_ml": 16.0,
+      "creatinine_mg_dl": 0.64,
+      "serum_folate_ng_ml": 15.2,
+      "pregnancy_status": "비임신",
+      "body_temperature_c": 36.4,
+      "current_hemoglobin_g_dl": 11.2
+    }
+  }
+}
