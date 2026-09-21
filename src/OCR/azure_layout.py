@@ -26,6 +26,10 @@ from src.OCR.patient_manager import (
     normalize_birth_date,
 )
 
+from src.Storage.azure_storage import (
+    upload_pdf,
+    upload_json,
+)
 
 # ==================================================
 # 환경변수
@@ -765,16 +769,17 @@ def process_healthcheck(input_file):
             unmapped
     }
 
-    # --------------------------------------------------
+        # --------------------------------------------------
     # 8. 저장
     # --------------------------------------------------
 
+    exam_date = document_info["exam_date"]
+
     exam_file = date_to_filename(
-        document_info[
-            "exam_date"
-        ]
+        exam_date
     )
 
+    # 로컬 JSON 저장
     output_file = os.path.join(
         "output",
         patient_id,
@@ -786,11 +791,30 @@ def process_healthcheck(input_file):
         output_file
     )
 
-    print("\n[5] 저장 완료")
+    print("\n[5] 로컬 저장 완료")
     print(output_file)
 
-    return output
+    # --------------------------------------------------
+    # 9. Azure Storage 저장
+    # --------------------------------------------------
 
+    pdf_blob = upload_pdf(
+        file_path=input_file,
+        patient_id=patient_id,
+        exam_date=exam_date,
+    )
+
+    json_blob = upload_json(
+        data=output,
+        patient_id=patient_id,
+        exam_date=exam_date,
+    )
+
+    print("\n[6] Azure Storage 저장 완료")
+    print("PDF :", pdf_blob)
+    print("JSON:", json_blob)
+
+    return output
 
 # ==================================================
 # 실행
@@ -799,7 +823,7 @@ def process_healthcheck(input_file):
 if __name__ == "__main__":
 
     input_file = (
-        "data/patient_01_healthcheck.pdf"
+        "data/patient_02_healthcheck.pdf"
     )
 
     process_healthcheck(

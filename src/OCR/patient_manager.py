@@ -1,11 +1,14 @@
-import json
-import os
 import re
 from datetime import datetime
 
+from src.Storage.azure_storage import (
+    download_json,
+    upload_metadata_json,
+)
 
-PATIENT_INDEX_FILE = (
-    "output/patient_index.json"
+
+PATIENT_INDEX_BLOB = (
+    "metadata/patient_index.json"
 )
 
 
@@ -41,41 +44,24 @@ def normalize_birth_date(value):
 
 def load_patient_index():
 
-    if not os.path.exists(
-        PATIENT_INDEX_FILE
-    ):
+    patients = download_json(
+        PATIENT_INDEX_BLOB
+    )
+
+    if patients is None:
         return []
 
-    with open(
-        PATIENT_INDEX_FILE,
-        "r",
-        encoding="utf-8"
-    ) as f:
-
-        return json.load(f)
+    return patients
 
 
 def save_patient_index(
     patients
 ):
 
-    os.makedirs(
-        "output",
-        exist_ok=True
+    upload_metadata_json(
+        data=patients,
+        blob_name=PATIENT_INDEX_BLOB,
     )
-
-    with open(
-        PATIENT_INDEX_FILE,
-        "w",
-        encoding="utf-8"
-    ) as f:
-
-        json.dump(
-            patients,
-            f,
-            ensure_ascii=False,
-            indent=2
-        )
 
 
 def generate_patient_id(

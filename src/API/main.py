@@ -93,9 +93,6 @@ class ChatRequest(BaseModel):
     question: str
 
 
-class ChatResponse(BaseModel):
-    answer: str
-
 def remove_temp_file(file_path: str):
     if os.path.exists(file_path):
         os.remove(file_path)
