@@ -107,3 +107,90 @@ def speak_text(text: str) -> bool:
             )
 
     return False
+
+def recognize_audio_file(file_path: str) -> str | None:
+    """
+    웹에서 전달받은 음성 파일을 Azure Speech STT로 변환한다.
+    """
+    speech_config = _create_speech_config()
+    speech_config.speech_recognition_language = "ko-KR"
+
+    audio_config = speechsdk.audio.AudioConfig(
+        filename=file_path
+    )
+
+    recognizer = speechsdk.SpeechRecognizer(
+        speech_config=speech_config,
+        audio_config=audio_config,
+    )
+
+    result = recognizer.recognize_once_async().get()
+
+    if result.reason == speechsdk.ResultReason.RecognizedSpeech:
+        return result.text
+
+    if result.reason == speechsdk.ResultReason.NoMatch:
+        return None
+
+    if result.reason == speechsdk.ResultReason.Canceled:
+        cancellation = result.cancellation_details
+
+        if cancellation.reason == speechsdk.CancellationReason.Error:
+            raise RuntimeError(
+                f"Azure Speech STT 오류: "
+                f"{cancellation.error_details}"
+            )
+
+        return None
+
+    return None
+
+
+def synthesize_speech_to_file(
+    text: str,
+    output_path: str,
+) -> str:
+    """
+    RAG 답변 텍스트를 음성 파일로 생성한다.
+    """
+    if not text or not text.strip():
+        raise ValueError(
+            "음성으로 변환할 텍스트가 비어 있습니다."
+        )
+
+    speech_config = _create_speech_config()
+    speech_config.speech_synthesis_voice_name = (
+        "ko-KR-SunHiNeural"
+    )
+
+    audio_config = speechsdk.audio.AudioOutputConfig(
+        filename=output_path
+    )
+
+    synthesizer = speechsdk.SpeechSynthesizer(
+        speech_config=speech_config,
+        audio_config=audio_config,
+    )
+
+    result = synthesizer.speak_text_async(
+        text.strip()
+    ).get()
+
+    if (
+        result.reason
+        == speechsdk.ResultReason.SynthesizingAudioCompleted
+    ):
+        return output_path
+
+    if result.reason == speechsdk.ResultReason.Canceled:
+        cancellation = result.cancellation_details
+
+        if cancellation.reason == speechsdk.CancellationReason.Error:
+            raise RuntimeError(
+                f"Azure Speech TTS 오류: "
+                f"{cancellation.error_details}"
+            )
+
+    raise RuntimeError(
+        "Azure Speech TTS 변환에 실패했습니다."
+    )
