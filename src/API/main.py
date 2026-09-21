@@ -1,12 +1,15 @@
 import os
 import tempfile
 import base64
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from fastapi import (
     FastAPI,
     HTTPException,
     UploadFile,
     File,
+    Request,
 )
 from pydantic import BaseModel
 
@@ -24,6 +27,67 @@ app = FastAPI(
     version="1.0.0",
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+def error_response(
+    code: str,
+    message: str,
+    status_code: int,
+):
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "success": False,
+            "error": {
+                "code": code,
+                "message": message,
+            },
+        },
+    )
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(
+    request: Request,
+    exc: HTTPException,
+):
+    if exc.status_code == 400:
+        code = "BAD_REQUEST"
+
+    elif exc.status_code == 404:
+        code = "NOT_FOUND"
+
+    else:
+        code = "HTTP_ERROR"
+
+    return error_response(
+        code=code,
+        message=str(exc.detail),
+        status_code=exc.status_code,
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(
+    request: Request,
+    exc: Exception,
+):
+    print(f"[SERVER ERROR] {exc}")
+
+    return error_response(
+        code="INTERNAL_SERVER_ERROR",
+        message="서버 처리 중 오류가 발생했습니다.",
+        status_code=500,
+    )
 
 class ChatRequest(BaseModel):
     question: str
@@ -44,16 +108,19 @@ def root():
     }
 
 
-@app.post("/api/chat", response_model=ChatResponse)
+@app.post("/api/chat")
 def chat(request: ChatRequest):
     try:
         answer = ask_mama(
             question=request.question,
         )
 
-        return ChatResponse(
-            answer=answer,
-        )
+        return {
+            "success": True,
+            "data": {
+                "answer": answer,
+            },
+        }
 
     except ValueError as e:
         raise HTTPException(
@@ -109,9 +176,12 @@ async def ocr_healthcheck(
         result = process_healthcheck(temp_path)
 
         return {
-            "filename": file.filename,
-            "ocr_result": result,
-        }
+            "success": True,
+            "data": {
+                "filename": file.filename,
+                "ocr_result": result,
+            },
+}
 
     except HTTPException:
         raise
@@ -202,10 +272,13 @@ async def voice_chat(
 
         # 7. 웹에 JSON 반환
         return {
-            "question": question,
-            "answer": answer,
-            "audio_base64": audio_base64,
-            "audio_format": "wav",
+            "success": True,
+            "data": {
+                "question": question,
+                "answer": answer,
+                "audio_base64": audio_base64,
+                "audio_format": "wav",
+            },
         }
 
     except HTTPException:

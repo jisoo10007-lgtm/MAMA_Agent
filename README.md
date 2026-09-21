@@ -1,434 +1,363 @@
 # MAMA Agent
 
-> 건강검진 데이터와 사용자 설문을 기반으로 개인의 건강 상태를 또래 집단 및 임상 기준과 비교하고, 개인화된 건강 정보를 제공하는 AI/Data 서비스
+> 건강검진 PDF를 구조화하고, 여성 건강 정보를 RAG 기반으로 제공하는 AI
+> 헬스케어 서비스
 
-## 1. Project Overview
+## 1. 프로젝트 개요
 
-**MAMA Agent**는 건강검진 기록과 사용자 입력 설문을 통합하여 개인 건강 데이터를 구조화하고 분석하는 프로젝트입니다.
+MAMA Agent는 건강검진 기록과 사용자 정보를 활용해 여성의 건강 상태를
+이해하기 쉬운 형태로 제공하는 프로젝트입니다.
 
-건강검진표는 병원 및 검진기관마다 형식이 다르기 때문에 직접 데이터를 입력하는 과정에서 불편함이 발생할 수 있습니다.
+현재 개발 범위는 다음 세 가지입니다.
 
-이를 해결하기 위해 **Azure AI Document Intelligence**를 활용하여 건강검진 PDF 및 이미지에서 검사 항목과 결과값을 자동으로 추출합니다.
+-   **OCR**: 건강검진 PDF → 구조화된 건강검진 JSON
+-   **RAG**: 임신 전·임신 중·출산 후 여성 건강 관련 질의응답
+-   **Voice**: 음성 질문 → STT → RAG → TTS
 
-추출된 건강검진 데이터는 사용자 설문 데이터와 결합한 뒤 데이터 검증 및 Feature Engineering을 거쳐 분석에 사용할 수 있는 Personal Health Profile로 변환합니다.
+향후 Databricks의 ML 결과가 확정되면 질병 위험 예측과 Peer Comparison
+결과를 RAG Context에 연결할 예정입니다.
 
-최종적으로 사용자의 건강 지표를 다음 세 가지 기준으로 비교하는 것을 목표로 합니다.
+> Peer Comparison은 질병 진단이나 발생 확률이 아니라 참조 집단 내 상대적
+> 위치를 설명하기 위한 정보입니다.
 
-- **Personal Value** — 사용자의 현재 건강 지표
-- **Peer Percentile** — 유사한 특성을 가진 또래 집단 내 위치
-- **Clinical Guideline** — 임상 가이드라인 기반 참고 기준
+------------------------------------------------------------------------
 
-> Peer Percentile은 질병 진단이나 위험 확률을 의미하지 않으며, 유사한 특성을 가진 집단과 비교하기 위한 참고 지표로 사용합니다.
+## 2. 현재 시스템 구조
 
----
-
-## 2. System Architecture
-
-```text
-Health Check PDF / Image
-        │
-        ▼
+``` text
+[건강검진]
+Health Check PDF
+      ↓
 Azure AI Document Intelligence
-(prebuilt-layout)
-        │
-        ▼
-OCR / Table Extraction
-        │
-        ▼
-Health Check Parser
-        │
-        ▼
-Canonical Health Check JSON
-        │
-        │
-        ├───────────────┐
-        │               │
-        ▼               ▼
-Health Check       User Questionnaire
-Data               Data
-        │               │
-        └───────┬───────┘
-                ▼
-       Personal Profile Merge
-                │
-                ▼
-      Validation / Normalization
-                │
-                ▼
-        Feature Engineering
-                │
-                ▼
-    ┌───────────┼───────────┐
-    ▼           ▼           ▼
- Routing    Peer Features  Outcomes
-                │
-                ▼
-         Peer Group Analysis
-                │
-                ▼
-        Personal / Peer /
-       Clinical Comparison
+      ↓
+Table Parsing / Field Mapping
+      ↓
+Validation
+      ↓
+Canonical Healthcheck JSON
+
+
+[텍스트 질문]
+User Question
+      ↓
+FastAPI /api/chat
+      ↓
+MAMA RAG (Azure Foundry)
+      ↓
+Text Answer
+
+
+[음성 질문]
+User Voice
+      ↓
+FastAPI /api/voice
+      ↓
+Azure Speech STT
+      ↓
+MAMA RAG
+      ↓
+Azure Speech TTS
+      ↓
+Text + Voice Answer
+
+
+[추후 연동]
+OCR / User Data
+      ↓
+Databricks / ML
+      ↓
+Risk Prediction / Peer Comparison
+      ↓
+RAG Context
+      ↓
+MAMA Explanation
 ```
 
----
+------------------------------------------------------------------------
 
-## 3. Data Sources
+## 3. 주요 기능
 
-### Health Check Record
+### OCR
 
-건강검진 PDF 또는 이미지에서 객관적인 건강 지표를 추출합니다.
+Azure AI Document Intelligence의 `prebuilt-layout`을 사용해 건강검진
+PDF의 표 구조를 분석합니다.
 
-예시:
-
-```text
-신장
-체중
-허리둘레
-수축기 혈압
-이완기 혈압
-공복혈당
-당화혈색소
-총콜레스테롤
-HDL 콜레스테롤
-중성지방
-LDL 콜레스테롤
-헤모글로빈
-hsCRP
-검진일
-공복 여부
-```
-
-### User Questionnaire
-
-건강검진표에서 얻기 어려운 생활습관 및 배경 정보는 사용자 설문을 통해 입력받습니다.
-
-예시:
-
-```text
-현재 생식 단계
-소득 수준
-교육 수준
-결혼 경험
-임신 경험
-흡연 여부
-음주 여부
-유산소 신체활동
-스트레스
-평일 수면시간
-주말 수면시간
-하루 앉아있는 시간
-```
-
----
-
-## 4. OCR Pipeline
-
-현재 OCR 파이프라인은 **Azure AI Document Intelligence**의 `prebuilt-layout` 모델을 사용합니다.
-
-```text
-PDF / JPG / PNG
-      │
-      ▼
-Azure Document Intelligence
-      │
-      ▼
-Layout Analysis
-      │
-      ├─ Text
-      ├─ Tables
-      ├─ Rows / Columns
-      └─ Document Structure
-      │
-      ▼
-Health Check Table Parser
-      │
-      ▼
+``` text
+PDF
+ ↓
+Document Intelligence
+ ↓
+Table Extraction
+ ↓
+Healthcheck Parser
+ ↓
 Field Mapping
-      │
-      ▼
-Canonical JSON
+ ↓
+Validation
+ ↓
+Structured JSON
 ```
 
-단순 OCR 결과를 사용하는 것이 아니라 표의 행과 열 구조를 분석하여 검사 항목과 검사 결과의 관계를 복원하는 것을 목표로 합니다.
+현재 고정 형식의 테스트 건강검진 PDF를 대상으로 OCR 파이프라인과 검증
+로직을 구현했습니다.
 
-예를 들어 다음과 같은 건강검진 결과를
+### RAG
 
-```text
-검사항목        결과      단위
+Azure Foundry 기반 MAMA Agent가 여성 건강 관련 문서를 검색하여
+답변합니다.
 
-공복혈당         91       mg/dL
-당화혈색소       5.2      %
-LDL 콜레스테롤   108      mg/dL
+주요 범위:
+
+-   임신 준비
+-   임신 중 건강관리
+-   출산 후 건강관리
+-   건강검진 수치 관련 설명
+
+ML 결과가 전달되는 경우 RAG는 ML 결과를 다시 계산하지 않고 **전달받은
+결과를 근거 문서와 함께 설명하는 역할**을 담당합니다.
+
+### Voice
+
+Azure Speech를 사용합니다.
+
+``` text
+Voice → STT → RAG → TTS → Voice
 ```
 
-다음과 같은 내부 데이터 형태로 변환합니다.
+현재 로컬 마이크 테스트와 FastAPI 음성 API 테스트를 완료했습니다.
 
-```json
+------------------------------------------------------------------------
+
+## 4. FastAPI
+
+### 실행
+
+``` bash
+uvicorn src.API.main:app --reload
+```
+
+-   Local API: `http://127.0.0.1:8000`
+-   Swagger: `http://127.0.0.1:8000/docs`
+
+### API 목록
+
+  기능           Method   Endpoint       입력   출력
+  -------------- -------- -------------- ------ --------------------
+  텍스트 질문    POST     `/api/chat`    JSON   RAG 답변
+  건강검진 OCR   POST     `/api/ocr`     PDF    OCR JSON
+  음성 질문      POST     `/api/voice`   WAV    질문 + 답변 + 음성
+
+### `/api/chat`
+
+Request:
+
+``` json
 {
-  "HE_glu": 91,
-  "HE_HbA1c": 5.2,
-  "HE_LDL_drct": 108
+  "question": "임신 중 엽산은 왜 필요한가요?"
 }
 ```
 
----
+Response:
 
-## 5. Personal Health Profile
-
-OCR 결과와 사용자 설문 데이터를 통합한 뒤 분석용 데이터 구조로 변환합니다.
-
-```json
+``` json
 {
-  "routing": {
-    "sex": "female",
-    "reproductive_stage": "non_pregnant"
-  },
-
-  "peer_features": {
-    "age": 29,
-    "HE_BMI": 22.27,
-    "HE_wc": 76.4,
-    "HE_sbp": 120,
-    "HE_dbp": 78,
-    "sm_presnt": 0,
-    "dr_month": 1,
-    "pa_aerobic": 1,
-    "mh_stress": 0,
-    "sleep_hours": 6.93,
-    "sitting_hours": 7.5
-  },
-
-  "outcomes": {
-    "HE_glu": 96,
-    "HE_HbA1c": 5.4,
-    "HE_LDL_drct": 119
-  },
-
-  "metadata": {
-    "exam_date": "2026-08-29",
-    "fasting": true
+  "success": true,
+  "data": {
+    "answer": "임신 중 엽산은..."
   }
 }
 ```
 
----
+### `/api/ocr`
 
-## 6. Feature Engineering
+`multipart/form-data`
 
-일부 Feature는 사용자 입력값을 그대로 사용하지 않고 자동으로 생성합니다.
-
-### BMI
-
-```text
-BMI = weight(kg) / height(m)^2
+``` text
+file: healthcheck.pdf
 ```
 
-### Average Sleep Time
+Response:
 
-```text
-sleep_hours =
-(weekday_sleep × 5 + weekend_sleep × 2) / 7
+``` json
+{
+  "success": true,
+  "data": {
+    "filename": "healthcheck.pdf",
+    "ocr_result": {}
+  }
+}
 ```
 
-Raw Data와 Model Feature를 분리하여 Feature 정의가 변경되더라도 원본 데이터를 다시 수집하지 않도록 설계합니다.
+### `/api/voice`
 
----
+현재 개발 버전에서는 WAV 입력을 지원합니다.
 
-## 7. Peer Group Analysis
+`multipart/form-data`
 
-Peer Group은 사용자의 건강 상태를 유사한 특성을 가진 집단과 비교하기 위한 분석 계층입니다.
-
-초기 Baseline은 **Rule-based Stratification**으로 구성하고, 이후 Clustering 기반 Peer Group과 비교할 예정입니다.
-
-Clustering 후보 모델:
-
-```text
-Gower Distance + K-Medoids
-K-Means
-MiniBatch K-Means
-K-Prototypes
+``` text
+file: voice.wav
 ```
 
-모델은 다음 기준으로 평가합니다.
+Response:
 
-```text
-Structure
-Stability
-Sample Sufficiency
-Incremental Utility
-Explainability
+``` json
+{
+  "success": true,
+  "data": {
+    "question": "임신 중 엽산은 왜 필요한가요?",
+    "answer": "임신 중 엽산은...",
+    "audio_base64": "UklGR...",
+    "audio_format": "wav"
+  }
+}
 ```
 
-건강 결과값 자체가 Peer Group 생성에 영향을 주는 Target Leakage를 방지하기 위해 주요 바이오마커는 Peer Group 구성 Feature와 분리합니다.
+### 공통 오류 응답
 
----
-
-## 8. Tech Stack
-
-**Language**
-
-```text
-Python
-SQL
+``` json
+{
+  "success": false,
+  "error": {
+    "code": "BAD_REQUEST",
+    "message": "오류 메시지"
+  }
+}
 ```
 
-**Azure**
+로컬 프론트엔드 연동을 위한 CORS 설정도 적용되어 있습니다.
 
-```text
-Microsoft Foundry
-Azure AI Document Intelligence
-Azure Data Lake Storage Gen2
-Azure Data Factory
-Azure Databricks
-Azure SQL
-Azure AI Search
-Azure OpenAI
-Azure Key Vault
-Microsoft Entra ID
+------------------------------------------------------------------------
+
+## 5. 프로젝트 구조
+
+``` text
+MAMA_Agent/
+├─ src/
+│  ├─ API/
+│  │  └─ main.py
+│  ├─ OCR/
+│  │  ├─ azure_layout.py
+│  │  ├─ field_mapper.py
+│  │  ├─ healthcheck_table_parser.py
+│  │  ├─ patient_manager.py
+│  │  └─ validator.py
+│  └─ RAG/
+│     ├─ mama_agent.py
+│     ├─ rag_context.py
+│     ├─ rag_policy.py
+│     └─ speech_service.py
+├─ tests/
+├─ data/
+├─ output/
+├─ .env.example
+├─ .gitignore
+├─ requirements.txt
+└─ README.md
 ```
 
-**Data / ML**
+------------------------------------------------------------------------
 
-```text
-pandas
-NumPy
-scikit-learn
-PySpark
-Delta Lake
-MLflow
-```
+## 6. 기술 스택
 
-**Visualization**
+  영역                 기술
+  -------------------- --------------------------------
+  Backend              Python, FastAPI, Uvicorn
+  OCR                  Azure AI Document Intelligence
+  RAG                  Azure Foundry
+  Voice                Azure Speech
+  Data / ML            pandas, NumPy, scikit-learn
+  향후 데이터 플랫폼   Azure Databricks
 
-```text
-Power BI
-```
+------------------------------------------------------------------------
 
----
+## 7. 환경 설정
 
-## 9. Project Structure
+### 가상환경
 
-```text
-MAMA-Agent/
-│
-├── data/
-│   └── healthcheck/
-│
-├── src/
-│   ├── document_reader/
-│   │   └── azure_layout.py
-│   │
-│   ├── parser/
-│   │   └── healthcheck_table_parser.py
-│   │
-│   ├── mapping/
-│   │   └── field_mapper.py
-│   │
-│   ├── validation/
-│   │   └── validator.py
-│   │
-│   └── profile/
-│       └── profile_builder.py
-│
-├── output/
-├── .env.example
-├── .gitignore
-├── requirements.txt
-└── README.md
-```
-
----
-
-## 10. Environment Setup
-
-### Create Virtual Environment
-
-```bash
+``` bash
 python -m venv .venv
 ```
 
 Windows:
 
-```bash
+``` bash
 .venv\Scripts\activate
 ```
 
-### Install Dependencies
+### 패키지 설치
 
-```bash
+``` bash
 pip install -r requirements.txt
 ```
 
-### Azure Environment Variables
+### 환경변수
 
-`.env.example`
+`.env.example`을 참고하여 `.env`를 생성합니다.
 
-```env
-AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=your_endpoint_here
-AZURE_DOCUMENT_INTELLIGENCE_KEY=your_key_here
+``` env
+AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=
+AZURE_DOCUMENT_INTELLIGENCE_KEY=
+
+AZURE_FOUNDRY_ENDPOINT=
+MAMA_AGENT_NAME=
+MAMA_AGENT_VERSION=
+
+AZURE_SPEECH_KEY=
+AZURE_SPEECH_REGION=
 ```
 
-실제 인증 정보는 `.env` 파일에 저장합니다.
+`.env`에는 실제 인증 정보를 저장하며 Git에 커밋하지 않습니다.
 
-```env
-AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT=YOUR_ENDPOINT
-AZURE_DOCUMENT_INTELLIGENCE_KEY=YOUR_KEY
-```
+------------------------------------------------------------------------
 
-> `.env` 파일은 Git에 포함하지 않습니다.
+## 8. 개발 상태
 
----
+### 완료
 
-## 11. Development Progress
+-   [x] Azure Document Intelligence Python SDK 연동
+-   [x] Healthcheck Table Parser
+-   [x] Field Mapping
+-   [x] OCR Validation
+-   [x] 고정 형식 테스트 PDF OCR 검증
+-   [x] Azure Foundry RAG 연동
+-   [x] RAG Context / Policy 구조
+-   [x] Azure Speech STT
+-   [x] Azure Speech TTS
+-   [x] FastAPI `/api/chat`
+-   [x] FastAPI `/api/ocr`
+-   [x] FastAPI `/api/voice`
+-   [x] CORS
+-   [x] 공통 성공/오류 응답 형식
 
-- [x] MAMA Agent 서비스 구조 설계
-- [x] 건강검진 / 사용자 설문 입력 구조 정의
-- [x] Peer Feature 후보 정의
-- [x] Azure AI Document Intelligence Layout 테스트
-- [x] Python 개발 환경 구성
-- [ ] Azure Document Intelligence Python SDK 연동
-- [ ] Health Check Table Parser 구현
-- [ ] Field Alias Mapping 구현
-- [ ] Data Validation 구현
-- [ ] Questionnaire Merge 구현
-- [ ] Feature Engineering 구현
-- [ ] Peer Group Baseline 구현
-- [ ] Clustering 모델 비교
-- [ ] Azure Data Pipeline 구축
-- [ ] Dashboard / AI Agent 연동
+### 진행 예정
 
----
+-   [ ] 실제 웹 프론트엔드 연동
+-   [ ] 사용자 설문 데이터 연동
+-   [ ] Databricks 데이터 저장/조회 연동
+-   [ ] 실제 ML Risk Prediction 결과 연동
+-   [ ] 실제 Peer Comparison 결과 연동
+-   [ ] 배포 환경 구성
 
-## 12. Current Development Goal
+> 현재 ML/RAG 연동 테스트에 사용한 ML 값은 합성 테스트 데이터입니다.
+> 실제 ML 및 Databricks 출력 인터페이스가 확정된 후 운영 연동을
+> 진행합니다.
 
-현재 개발 단계의 목표는 다음 파이프라인을 완성하는 것입니다.
+------------------------------------------------------------------------
 
-```text
-Health Check PDF
-        ↓
-Azure Document Intelligence
-        ↓
-Layout / Table Extraction
-        ↓
-Health Check Parser
-        ↓
-Canonical Health JSON
-```
+## 9. Security
 
-이후 사용자 설문 데이터를 결합하여 Personal Health Profile을 생성하고 Peer Group 분석 파이프라인으로 확장할 예정입니다.
+Azure API Key와 Endpoint 등 인증 정보는 `.env`에서 관리합니다.
 
----
+`.gitignore` 예시:
 
-## Security
-
-Azure API Key 및 Endpoint 등의 인증 정보는 GitHub Repository에 저장하지 않습니다.
-
-`.gitignore`:
-
-```gitignore
+``` gitignore
 .env
 .venv/
+venv/
 __pycache__/
 *.pyc
 output/
 ```
+
+인증 정보가 포함된 `.env` 파일은 GitHub Repository에 업로드하지
+않습니다.
