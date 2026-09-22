@@ -814,6 +814,11 @@ def process_healthcheck(input_file):
     print("PDF :", pdf_blob)
     print("JSON:", json_blob)
 
+    output["storage"] = {
+        "raw": pdf_blob,
+        "processed": json_blob,
+    }
+
     return output
 
 # ==================================================

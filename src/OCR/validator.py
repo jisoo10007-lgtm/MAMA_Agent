@@ -1,6 +1,8 @@
 # =========================================================
 # MAMA Agent Healthcheck Validator
 #
+# X_exam 기준
+#
 # 주의:
 # 아래 range는 임상 진단 기준이 아니라
 # OCR / 파싱 오류를 탐지하기 위한 sanity range이다.
@@ -27,12 +29,6 @@ def validate_range(field, value):
         "bmi_kg_m2": (10, 80),
 
         # -------------------------------------------------
-        # 시력
-        # -------------------------------------------------
-        "vision_left": (0, 5),
-        "vision_right": (0, 5),
-
-        # -------------------------------------------------
         # 혈압
         # -------------------------------------------------
         "systolic_bp_mmhg": (60, 250),
@@ -42,7 +38,6 @@ def validate_range(field, value):
         # 혈액
         # -------------------------------------------------
         "health_exam_hemoglobin_g_dl": (5, 25),
-        "current_hemoglobin_g_dl": (5, 25),
 
         # -------------------------------------------------
         # 염증
@@ -71,6 +66,14 @@ def validate_range(field, value):
         "ggt_u_l": (0, 2000),
 
         # -------------------------------------------------
+        # 단백뇨
+        #
+        # X_exam에서는 DOUBLE 값
+        # 현재 확인된 데이터 범위: 0 ~ 2
+        # -------------------------------------------------
+        "urine_protein_dipstick": (0, 2),
+
+        # -------------------------------------------------
         # 철대사
         # -------------------------------------------------
         "ferritin_ng_ml": (0, 2000),
@@ -86,21 +89,28 @@ def validate_range(field, value):
         "serum_folate_ng_ml": (0.1, 100),
 
         # -------------------------------------------------
+        # 임신주수
+        #
+        # X_exam: gestational_age_days
+        # OCR 오류 탐지를 위한 넓은 sanity range
+        # -------------------------------------------------
+        "gestational_age_days": (0, 320),
+
+        # -------------------------------------------------
         # 체온
         # -------------------------------------------------
         "body_temperature_c": (30, 45),
     }
 
-    # 범위 검사가 필요 없는 category field 등
+    # 정의되지 않은 필드는 범위 검증 생략
     if field not in ranges:
         return True, None
 
-    # 숫자가 아닌 값이 들어온 경우
+    # 숫자가 아닌 값
     if not isinstance(
         value,
         (int, float)
     ):
-
         return (
             False,
             f"숫자형 값이 아님: {value}"
@@ -194,112 +204,69 @@ def get_value(
 
 
 # =========================================================
-# Category Field 검증
+# X_exam 특수 필드 검증
 # =========================================================
 
-def validate_categories(
+def validate_special_fields(
     data
 ):
 
     errors = []
 
     # -------------------------------------------------
-    # 청력
-    # -------------------------------------------------
-
-    hearing_allowed = {
-        "normal",
-        "abnormal",
-        "unknown"
-    }
-
-    for field in [
-        "hearing_left",
-        "hearing_right"
-    ]:
-
-        value = get_value(
-            data,
-            field
-        )
-
-        if (
-            value is not None
-            and value not in hearing_allowed
-        ):
-
-            errors.append({
-                "field": field,
-                "value": value,
-                "message":
-                    "허용되지 않은 청력 category"
-            })
-
-    # -------------------------------------------------
     # 단백뇨
+    # X_exam에서는 숫자형
     # -------------------------------------------------
-
-    protein_allowed = {
-        "negative",
-        "trace",
-        "1+",
-        "2+",
-        "3+",
-        "4+",
-        "unknown"
-    }
 
     protein = get_value(
         data,
         "urine_protein_dipstick"
     )
 
-    if (
-        protein is not None
-        and protein not in protein_allowed
-    ):
+    if protein is not None:
 
-        errors.append({
-            "field":
-                "urine_protein_dipstick",
+        if not isinstance(
+            protein,
+            (int, float)
+        ):
 
-            "value":
-                protein,
+            errors.append({
+                "field":
+                    "urine_protein_dipstick",
 
-            "message":
-                "허용되지 않은 단백뇨 category"
-        })
+                "value":
+                    protein,
+
+                "message":
+                    "단백뇨 값은 숫자형이어야 합니다."
+            })
 
     # -------------------------------------------------
-    # 임신여부
+    # gestational_age_days
     # -------------------------------------------------
 
-    pregnancy_allowed = {
-        "pregnant",
-        "not_pregnant",
-        "unknown"
-    }
-
-    pregnancy = get_value(
+    gestational_days = get_value(
         data,
-        "pregnancy_status"
+        "gestational_age_days"
     )
 
-    if (
-        pregnancy is not None
-        and pregnancy not in pregnancy_allowed
-    ):
+    if gestational_days is not None:
 
-        errors.append({
-            "field":
-                "pregnancy_status",
+        if not isinstance(
+            gestational_days,
+            (int, float)
+        ):
 
-            "value":
-                pregnancy,
+            errors.append({
+                "field":
+                    "gestational_age_days",
 
-            "message":
-                "허용되지 않은 임신여부 category"
-        })
+                "value":
+                    gestational_days,
+
+                "message":
+                    "임신주수 일수는 숫자형이어야 합니다."
+            })
 
     return errors
 
@@ -411,6 +378,8 @@ def validate_cross_fields(
 
 # =========================================================
 # Pregnancy Metadata 검증
+#
+# 기존 azure_layout.py와의 호환을 위해 유지
 # =========================================================
 
 def validate_pregnancy_info(
@@ -453,7 +422,7 @@ def validate_pregnancy_info(
         })
 
     # -------------------------------------------------
-    # 임신인데 주수가 있는 경우 sanity check
+    # 기존 pregnancy_info 주수 sanity check
     # -------------------------------------------------
 
     if (
@@ -521,11 +490,9 @@ def validate_healthcheck(
             "value"
         )
 
-        valid, message = (
-            validate_range(
-                field,
-                value
-            )
+        valid, message = validate_range(
+            field,
+            value
         )
 
         if not valid:
@@ -542,21 +509,21 @@ def validate_healthcheck(
             })
 
     # -------------------------------------------------
-    # Category 검증
+    # 특수 필드
     # -------------------------------------------------
 
-    category_errors = (
-        validate_categories(
+    special_errors = (
+        validate_special_fields(
             data
         )
     )
 
     validation_errors.extend(
-        category_errors
+        special_errors
     )
 
     # -------------------------------------------------
-    # Cross-field 검증
+    # Cross-field
     # -------------------------------------------------
 
     cross_errors = (

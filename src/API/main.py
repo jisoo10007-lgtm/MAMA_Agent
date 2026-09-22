@@ -175,10 +175,16 @@ async def ocr_healthcheck(
         return {
             "success": True,
             "data": {
+                "patient_id": result["patient_id"],
                 "filename": file.filename,
-                "ocr_result": result,
+                "ocr_result": {
+                    key: value
+                    for key, value in result.items()
+                    if key != "storage"
+                },
+                "storage": result["storage"],
             },
-}
+        }
 
     except HTTPException:
         raise
